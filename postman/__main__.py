@@ -16,7 +16,7 @@ def cmd_send(args):
     ses = boto.connect_ses()
     out("Sending mail to: %s" % ", ".join(args.destinations), args)
     msg = sys.stdin.read()
-    r = ses.send_raw_email(args.f, msg, args.destinations)
+    r = ses.send_raw_email(msg, args.f, args.destinations)
     if r.get("SendRawEmailResponse", {}).get("SendRawEmailResult", {}).get("MessageId"):
         out("OK", args)
     else:
