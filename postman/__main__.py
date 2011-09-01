@@ -121,3 +121,7 @@ def main():
     }
     args = parser.parse_args()
     cmdmap[args.command](args)
+
+
+if __name__ == "__main__":
+    main()
