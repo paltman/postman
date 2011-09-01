@@ -11,22 +11,24 @@ from postman import __version__
 def cmd_send(args):
     ses = boto.connect_ses()
     msg = sys.stdin.read()
-    details = 'ses_from={0} {1}'.format(args.f, ' '.join(
-        'ses_to=' + d for d in args.destinations))
+    dests = 'postto={0}'.format(args.destinations[0])
+    if args.verbose:
+        dests = ' '.join('postto={0}'.format(d) for d in args.destinations)
+    details = 'postfrom={0} {1}'.format(args.f, dests)
     if args.f == "MAILER-DAEMON":
-        print("ses_status=IGNORE {0}".format(details))
+        print("poststatus=IGNORE {0}".format(details))
     else:
         try:
             result = ses.send_raw_email(msg, args.f, args.destinations)
             if result.get("SendRawEmailResponse", {})\
                .get("SendRawEmailResult", {})\
                .get("MessageId"):
-                print("ses_status=OK {0}".format(details))
+                print("poststatus=OK {0}".format(details))
             else:
-                print("ses_status=NOTSENT {0} {1}".format(details, result))
+                print("poststatus=NOTSENT {0} {1}".format(details, result))
                 sys.exit(1)
         except boto.exception.BotoServerError as err:
-            print('ses_status=ERROR status={0} reason="{1}"'
+            print('poststatus=ERROR httpstatus={0} reason="{1}"'
                   ' message="{2}" code={3} {4}'.format(
                       err.status, err.reason, err.error_message,
                       err.error_code, details))
@@ -84,9 +86,10 @@ def cmd_delete_verified(args):
 
 def main():
     parser = argparse.ArgumentParser(
-        prog="postman", description="send an email via Amazon SES")
-    parser.add_argument("--version", action="version",
+        prog="postman", description="Send an email via Amazon SES")
+    parser.add_argument("-V", "--version", action="version",
                         version="postman " + __version__)
+    parser.add_argument("-v", "--verbose", action="store_true")
 
     commands = parser.add_subparsers(dest="command")
 
