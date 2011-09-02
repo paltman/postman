@@ -11,12 +11,14 @@ from postman import __version__
 def cmd_send(args):
     ses = boto.connect_ses()
     msg = sys.stdin.read()
+    # Verbosity lists all recipients instead of first
     if args.verbose:
         dests = ' '.join('post_to={0}'.format(d) for d in args.destinations)
     else:
         dests = 'post_to={0}'.format(args.destinations[0])
     details = 'post_from={0} {1}'.format(args.f, dests)
-    if args.f == "MAILER-DAEMON":
+    # Ignore bounces from MAILER-DAEMON (e.g. Postfix) - SES always rejects.
+    if args.f.upper().startswith("MAILER-DAEMON"):
         print("post_status=IGNORE {0}".format(details))
     else:
         try:
@@ -38,7 +40,6 @@ def cmd_send(args):
                                           err.error_code,
                                           err.request_id,
                                           details))
-            print(err)
             sys.exit(1)
 
 
