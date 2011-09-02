@@ -11,27 +11,33 @@ from postman import __version__
 def cmd_send(args):
     ses = boto.connect_ses()
     msg = sys.stdin.read()
-    dests = 'post_to={0}'.format(args.destinations[0])
     if args.verbose:
         dests = ' '.join('post_to={0}'.format(d) for d in args.destinations)
+    else:
+        dests = 'post_to={0}'.format(args.destinations[0])
     details = 'post_from={0} {1}'.format(args.f, dests)
     if args.f == "MAILER-DAEMON":
         print("post_status=IGNORE {0}".format(details))
     else:
         try:
             result = ses.send_raw_email(msg, args.f, args.destinations)
-            if result.get("SendRawEmailResponse", {})\
-               .get("SendRawEmailResult", {})\
-               .get("MessageId"):
-                print("post_status=OK {0}".format(details))
+            rbody = result.get("SendRawEmailResponse", {})
+            msgid = rbody.get("SendRawEmailResult", {}).get("MessageId")
+            reqid = rbody.get("ResponseMetadata", {}).get("RequestId")
+            if msgid:
+                print("post_status=OK msgid={0} reqid={1} {2}".format(
+                    msgid, reqid, details))
             else:
-                print("post_status=NOTSENT {0} {1}".format(details, result))
+                print("post_status=NOTSENT reqid={0} {1} {2}".format(
+                    reqid, details, result))
                 sys.exit(1)
         except boto.exception.BotoServerError as err:
-            print('post_status=ERROR http_status={0} '
-                  ' errmsg="{1}" errcode={2} {3}'.format(
-                      err.status, err.error_message,
-                      err.error_code, details))
+            print('post_status=ERROR http_status={0} errmsg="{1}" errcode={2}'
+                  ' reqid={3} {4}'.format(err.status,
+                                          err.error_message,
+                                          err.error_code,
+                                          err.request_id,
+                                          details))
             print(err)
             sys.exit(1)
 
