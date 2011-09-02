@@ -11,27 +11,28 @@ from postman import __version__
 def cmd_send(args):
     ses = boto.connect_ses()
     msg = sys.stdin.read()
-    dests = 'postto={0}'.format(args.destinations[0])
+    dests = 'post_to={0}'.format(args.destinations[0])
     if args.verbose:
-        dests = ' '.join('postto={0}'.format(d) for d in args.destinations)
-    details = 'postfrom={0} {1}'.format(args.f, dests)
+        dests = ' '.join('post_to={0}'.format(d) for d in args.destinations)
+    details = 'post_from={0} {1}'.format(args.f, dests)
     if args.f == "MAILER-DAEMON":
-        print("poststatus=IGNORE {0}".format(details))
+        print("post_status=IGNORE {0}".format(details))
     else:
         try:
             result = ses.send_raw_email(msg, args.f, args.destinations)
             if result.get("SendRawEmailResponse", {})\
                .get("SendRawEmailResult", {})\
                .get("MessageId"):
-                print("poststatus=OK {0}".format(details))
+                print("post_status=OK {0}".format(details))
             else:
-                print("poststatus=NOTSENT {0} {1}".format(details, result))
+                print("post_status=NOTSENT {0} {1}".format(details, result))
                 sys.exit(1)
         except boto.exception.BotoServerError as err:
-            print('poststatus=ERROR httpstatus={0} reason="{1}"'
-                  ' message="{2}" code={3} {4}'.format(
-                      err.status, err.reason, err.error_message,
+            print('post_status=ERROR http_status={0} '
+                  ' errmsg="{1}" errcode={2} {3}'.format(
+                      err.status, err.error_message,
                       err.error_code, details))
+            print(err)
             sys.exit(1)
 
 
