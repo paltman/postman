@@ -97,7 +97,8 @@ def main():
         prog="postman", description="Send an email via Amazon SES")
     parser.add_argument("-V", "--version", action="version",
                         version="postman " + __version__)
-    parser.add_argument("-v", "--verbose", action="store_true")
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Extra logging information.")
 
     commands = parser.add_subparsers(dest="command")
 
