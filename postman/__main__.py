@@ -18,7 +18,7 @@ def cmd_send(args):
         dests = 'post_to={0}'.format(args.destinations[0])
     details = 'post_from={0} {1}'.format(args.f, dests)
     # Ignore bounces from MAILER-DAEMON (e.g. Postfix) - SES always rejects.
-    if args.f.upper().startswith("MAILER-DAEMON"):
+    if args.f.upper().startswith("MAILER-DAEMON@"):
         print("post_status=IGNORE {0}".format(details))
     else:
         try:
