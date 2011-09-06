@@ -23,7 +23,7 @@ setup(
         ],
     },
     install_requires = [
-        "argparse==1.2.1",
-        "boto==2.0"
+        "argparse",
+        "boto>=2.0"
     ]
 )
