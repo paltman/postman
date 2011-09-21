@@ -22,8 +22,4 @@ setup(
             "postman = postman.__main__:main",
         ],
     },
-    install_requires = [
-        "argparse",
-        "boto>=2.0"
-    ]
 )
