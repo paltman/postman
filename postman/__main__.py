@@ -17,31 +17,21 @@ def cmd_send(args):
     else:
         dests = 'post_to={0}'.format(args.destinations[0])
     details = 'post_from={0} {1}'.format(args.f, dests)
-    # Ignore bounces from MAILER-DAEMON (e.g. Postfix) - SES always rejects.
-    if (args.f.upper() == "MAILER-DAEMON" or
-        args.f.upper().startswith("MAILER-DAEMON@")):
-        print("post_status=IGNORE {0}".format(details))
-    else:
-        try:
-            result = ses.send_raw_email(msg, args.f, args.destinations)
-            rbody = result.get("SendRawEmailResponse", {})
-            msgid = rbody.get("SendRawEmailResult", {}).get("MessageId")
-            reqid = rbody.get("ResponseMetadata", {}).get("RequestId")
-            if msgid:
-                print("post_status=OK msgid={0} reqid={1} {2}".format(
-                    msgid, reqid, details))
-            else:
-                print("post_status=NOTSENT reqid={0} {1} {2}".format(
-                    reqid, details, result))
-                sys.exit(1)
-        except boto.exception.BotoServerError as err:
-            print('post_status=ERROR http_status={0} errmsg="{1}" errcode={2}'
-                  ' reqid={3} {4}'.format(err.status,
-                                          err.error_message,
-                                          err.error_code,
-                                          err.request_id,
-                                          details))
-            sys.exit(1)
+    try:
+        result = ses.send_raw_email(msg, args.f, args.destinations)
+        rbody = result.get("SendRawEmailResponse", {})
+        msgid = rbody.get("SendRawEmailResult", {}).get("MessageId")
+        reqid = rbody.get("ResponseMetadata", {}).get("RequestId")
+        print("post_status=OK msgid={0} reqid={1} {2}".format(
+            msgid, reqid, details))
+    except boto.exception.BotoServerError as err:
+        print('post_status=ERROR http_status={0} errmsg="{1}" errcode={2}'
+                ' reqid={3} {4}'.format(err.status,
+                                        err.error_message,
+                                        err.error_code,
+                                        err.request_id,
+                                        details))
+        sys.exit(1)
 
 
 def cmd_verify(args):
