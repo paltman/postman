@@ -47,21 +47,17 @@ def cmd_verify(args):
         out("Verification for %s sent." % email, args)
 
 
-def cmd_list_verified(args):
+def cmd_list_verified(_args):
     ses = boto.connect_ses()
-    args.verbose = True
-    
     addresses = ses.list_verified_email_addresses()
     addresses = addresses["ListVerifiedEmailAddressesResponse"]
     addresses = addresses["ListVerifiedEmailAddressesResult"]
     addresses = addresses["VerifiedEmailAddresses"]
-    
     if not addresses:
-        out("No addresses are verified on this account.", args)
+        print("No addresses are verified on this account.")
         return
-    
-    for address in addresses:
-        out(address, args)
+    for address in sorted(addresses):
+        print(address)
 
 
 def cmd_show_quota(args):
