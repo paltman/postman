@@ -71,19 +71,22 @@ def cmd_show_quota(_args):
                      float(data["MaxSendRate"])))
 
 
-def cmd_show_stats(args):
+def cmd_show_stats(_args):
     ses = boto.connect_ses()
-    args.verbose = True
-    
     data = ses.get_send_statistics()
     data = data["GetSendStatisticsResponse"]["GetSendStatisticsResult"]
-    for datum in data["SendDataPoints"]:
-        out("Complaints: %s" % datum["Complaints"], args)
-        out("Timestamp: %s" % datum["Timestamp"], args)
-        out("DeliveryAttempts: %s" % datum["DeliveryAttempts"], args)
-        out("Bounces: %s" % datum["Bounces"], args)
-        out("Rejects: %s" % datum["Rejects"], args)
-        out("", args)
+    fmt = "{0:<20} {1:>10} {2:>8} {3:>7} {4:>7}"
+    print(fmt.format('Timestamp', 'DeliveryAttempts',
+                     'Rejects', 'Bounces', 'Complaints'))
+    for datum in sorted(data["SendDataPoints"],
+                        key=lambda x: x.get('Timestamp')):
+        print(fmt.format(
+            datum["Timestamp"],
+            datum["DeliveryAttempts"],
+            datum["Rejects"],
+            datum["Bounces"],
+            datum["Complaints"],
+        ))
 
 
 def cmd_delete_verified(args):
