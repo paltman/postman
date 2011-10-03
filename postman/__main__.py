@@ -57,9 +57,12 @@ def cmd_list_verified(_args):
 def cmd_show_quota(_args):
     ses = boto.connect_ses()
     data = ses.get_send_quota()["GetSendQuotaResponse"]["GetSendQuotaResult"]
-    print("Max 24 Hour Send: {0}".format(data["Max24HourSend"]))
-    print("Sent Last 24 Hours: {0}".format(data["SentLast24Hours"]))
-    print("Max Send Rate: {0}".format(data["MaxSendRate"]))
+    fmt = "{0:<15} {1:<15} {2:<14}"
+    print(fmt.format("SentLast24Hours", "Max24HourSend", "MaxSendRate"))
+    fmt = "{0:<15.0f} {1:<15.0f} {2:<14.0f}"
+    print(fmt.format(float(data["SentLast24Hours"]),
+                     float(data["Max24HourSend"]),
+                     float(data["MaxSendRate"])))
 
 
 def cmd_show_stats(_args):
