@@ -1,3 +1,5 @@
+from __future__ import print_function
+
 import argparse
 import sys
 
@@ -14,13 +16,28 @@ def out(msg, args):
 
 def cmd_send(args):
     ses = boto.connect_ses()
-    out("Sending mail to: %s" % ", ".join(args.destinations), args)
     msg = sys.stdin.read()
-    r = ses.send_raw_email(msg, args.f, args.destinations)
-    if r.get("SendRawEmailResponse", {}).get("SendRawEmailResult", {}).get("MessageId"):
-        out("OK", args)
+    # Verbosity lists all recipients instead of first
+    if args.verbose:
+        dests = ' '.join('post_to={0}'.format(d) for d in args.destinations)
     else:
-        out("ERROR: %s" % r, args)
+        dests = 'post_to={0}'.format(args.destinations[0])
+    details = 'post_from={0} {1}'.format(args.f, dests)
+    try:
+        result = ses.send_raw_email(msg, args.f, args.destinations)
+        rbody = result.get("SendRawEmailResponse", {})
+        msgid = rbody.get("SendRawEmailResult", {}).get("MessageId")
+        reqid = rbody.get("ResponseMetadata", {}).get("RequestId")
+        print("post_status=OK msgid={0} reqid={1} {2}".format(
+            msgid, reqid, details))
+    except boto.exception.BotoServerError as err:
+        print('post_status=ERROR http_status={0} errmsg="{1}" errcode={2}'
+                ' reqid={3} {4}'.format(err.status,
+                                        err.error_message,
+                                        err.error_code,
+                                        err.request_id,
+                                        details))
+        sys.exit(1)
 
 
 def cmd_verify(args):
