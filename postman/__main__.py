@@ -66,14 +66,16 @@ def cmd_show_stats(_args):
     ses = boto.connect_ses()
     data = ses.get_send_statistics()
     data = data["GetSendStatisticsResponse"]["GetSendStatisticsResult"]
-    fmt = "{0:>20} {1:>10} {2:>8} {3:>7} {4:>7}"
-    print(fmt.format('Timestamp', 'Complaints', 'Attempts', 'Bounces', 'Rejects'))
+    fmt = "{0:<20} {1:>10} {2:>8} {3:>7} {4:>7}"
+    print(fmt.format('Timestamp', 'DeliveryAttempts', 'Rejects', 'Bounces', 'Complaints'))
     for datum in sorted(data["SendDataPoints"], key=lambda x:x.get('Timestamp')):
-        print(fmt.format(datum["Timestamp"],
-                         datum["Complaints"],
-                         datum["DeliveryAttempts"],
-                         datum["Bounces"],
-                         datum["Rejects"]))
+        print(fmt.format(
+            datum["Timestamp"],
+            datum["DeliveryAttempts"],
+            datum["Rejects"],
+            datum["Bounces"],
+            datum["Complaints"],
+        ))
 
 
 def cmd_delete_verified(args):
