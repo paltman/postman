@@ -91,45 +91,44 @@ def cmd_delete_verified(args):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="postman", description="send an email via Amazon SES")
-    parser.add_argument("--version", action="version", version="%%(prog)s %s" % __version__)
-    parser.add_argument("--verbose", action="store_true")
-    
-    command_parsers = parser.add_subparsers(dest="command")
-    
-    # cmd: send
-    parser_send = command_parsers.add_parser("send")
+    parser = argparse.ArgumentParser(
+        prog="postman", description="Send an email via Amazon SES")
+    parser.add_argument("-V", "--version", action="version",
+                        version="postman " + __version__)
+    parser.add_argument("-v", "--verbose", action="store_true",
+                        help="Extra logging information.")
+
+    commands = parser.add_subparsers(dest="command")
+
+    parser_send = commands.add_parser("send")
     parser_send.add_argument("-f",
         help="the address to send the message from, must be validated")
-    parser_send.add_argument("destinations", metavar="TO", type=str, nargs="+",
+    parser_send.add_argument("destinations", metavar="TO", nargs="+",
         help="a list of email addresses to deliver message to")
-    
-    # cmd: verify
-    parser_send = command_parsers.add_parser("verify")
-    parser_send.add_argument("email", nargs="+",
+
+    parser_verify = commands.add_parser("verify")
+    parser_verify.add_argument("email", nargs="+",
         help="an email address to verify for sending from")
-    
-    # cmd: list_verified
-    command_parsers.add_parser("list_verified")
-    
-    # cmd: show_quota
-    command_parsers.add_parser("show_quota")
-    
-    # cmd: show_stats
-    command_parsers.add_parser("show_stats")
-    
-    # cmd: delete_verified
-    parser_delete = command_parsers.add_parser("delete_verified")
+
+    commands.add_parser("list_verified")
+    commands.add_parser("show_quota")
+    commands.add_parser("show_stats")
+
+    parser_delete = commands.add_parser("delete_verified")
     parser_delete.add_argument("email", nargs="+",
-        help="verified email addresses that will be deleted from verification list")
-    
-    args = parser.parse_args()
-    
-    {
+        help="verified email addresses to deleted from verification list")
+
+    cmdmap = {
         "send": cmd_send,
         "verify": cmd_verify,
         "list_verified": cmd_list_verified,
         "show_quota": cmd_show_quota,
         "show_stats": cmd_show_stats,
         "delete_verified": cmd_delete_verified
-    }[args.command](args)
+    }
+    args = parser.parse_args()
+    cmdmap[args.command](args)
+
+
+if __name__ == "__main__":
+    main()
