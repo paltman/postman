@@ -8,12 +8,6 @@ import boto
 from postman import __version__
 
 
-def out(msg, args):
-    if args.verbose:
-        sys.stdout.write("%s\n" % msg)
-        sys.stdout.flush()
-
-
 def cmd_send(args):
     ses = boto.connect_ses()
     msg = sys.stdin.read()
@@ -44,7 +38,7 @@ def cmd_verify(args):
     ses = boto.connect_ses()
     for email in args.email:
         ses.verify_email_address(email)
-        out("Verification for %s sent." % email, args)
+        print("Verification for {0} sent.".format(email))
 
 
 def cmd_list_verified(_args):
@@ -93,7 +87,7 @@ def cmd_delete_verified(args):
     ses = boto.connect_ses()
     for email in args.email:
         ses.delete_verified_email_address(email_address=email)
-        out("Deleted %s" % email, args)
+        print("Deleted {0}".format(email))
 
 
 def main():
