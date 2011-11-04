@@ -1,21 +1,54 @@
 import argparse
+import re
 import sys
 
 import boto
 
 from postman import __version__
 
+legal_headers = [ 'Accept-Language', 'Bcc', 'Cc', 'Comments', 'Content-Type', 
+    'Content-Transfer-Encoding', 'Content-ID', 'Content-Description', 
+    'Content-Disposition', 'Content-Language', 'Date', 'DKIM-Signature',
+    'DomainKey-Signature From', 'In-Reply-To', 'Keywords', 'List-Archive',
+    'List-Help', 'List-Id', 'List-Owner', 'List-Post', 'List-Subscribe', 
+    'List-Unsubscribe', 'Message-Id', 'MIME-Version', 'Received', 'References',
+    'Reply-To', 'Return-Path', 'Sender', 'Subject', 'Thread-Index', 
+    'Thread-Topic', 'To', 'User-Agent' ]
 
 def out(msg, args):
     if args.verbose:
         sys.stdout.write("%s\n" % msg)
         sys.stdout.flush()
 
+def sanitize(args, msg):
+    ''' Transform any headers SES disallows in to X-Headers.
 
+    Sanitize method adapted from this Perl snippet:
+    http://www.evanhoffman.com/evan/2011/05/16/amazon-ses-illegal-header-errors/
+    '''
+    cleanmsg = ""
+    in_header = True
+
+    # Avoids indented lines.
+    hdr_re = re.compile("^([\w\d\-]+):")
+
+    for line in msg.splitlines(True):
+        # Two line breaks between header and message body.
+        if re.match("^[\n\r]", line):
+            # Do nothing once we've scanned the headers.
+            in_header = False
+        if in_header and hdr_re.match(line):
+            if hdr_re.match(line).group(1) not in legal_headers:
+                line = "X-%s" % line
+        cleanmsg += line
+    return cleanmsg
+                        
 def cmd_send(args):
     ses = boto.connect_ses()
     out("Sending mail to: %s" % ", ".join(args.destinations), args)
     msg = sys.stdin.read()
+    if args.sanitize:
+        msg = sanitize(args, msg)
     r = ses.send_raw_email(msg, args.f, args.destinations)
     if r.get("SendRawEmailResponse", {}).get("SendRawEmailResult", {}).get("MessageId"):
         out("OK", args)
@@ -90,6 +123,8 @@ def main():
     parser_send = command_parsers.add_parser("send")
     parser_send.add_argument("-f",
         help="the address to send the message from, must be validated")
+    parser_send.add_argument("--sanitize", action="store_true", 
+        help="Sanitize headers. Convert illegal headers to X-Headers.")
     parser_send.add_argument("destinations", metavar="TO", type=str, nargs="+",
         help="a list of email addresses to deliver message to")
     
