@@ -9,7 +9,7 @@ from postman import __version__
 legal_headers = [ "Accept-Language", "Bcc", "Cc", "Comments", "Content-Type", 
     "Content-Transfer-Encoding", "Content-ID", "Content-Description", 
     "Content-Disposition", "Content-Language", "Date", "DKIM-Signature",
-    "DomainKey-Signature From", "In-Reply-To", "Keywords", "List-Archive",
+    "DomainKey-Signature", "From", "In-Reply-To", "Keywords", "List-Archive",
     "List-Help", "List-Id", "List-Owner", "List-Post", "List-Subscribe", 
     "List-Unsubscribe", "Message-Id", "MIME-Version", "Received", "References",
     "Reply-To", "Return-Path", "Sender", "Subject", "Thread-Index", 
